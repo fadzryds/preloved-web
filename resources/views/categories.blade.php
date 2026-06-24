@@ -2,6 +2,10 @@
 
 @section('content')
 
+@php
+use Illuminate\Support\Facades\Storage;
+@endphp
+
 <div class="container">
 
     <h1 class="page-title">
@@ -10,21 +14,25 @@
 
     <div class="category-grid">
 
-        @foreach($categories ?? [] as $category)
+        @forelse($categories as $category)
 
-        <div class="category-item">
+            <div class="category-item">
 
-            <img
-                src="{{ asset('images/' . $category->image) }}"
-                alt="{{ $category->name }}">
+                <img
+                    src="{{ Storage::url($category->image) }}"
+                    alt="{{ $category->name }}">
 
-            <span>
-                {{ $category->name }}
-            </span>
+                <span>
+                    {{ $category->name }}
+                </span>
 
-        </div>
+            </div>
 
-        @endforeach
+        @empty
+
+            <p>Tidak ada kategori.</p>
+
+        @endforelse
 
     </div>
 

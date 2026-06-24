@@ -28,7 +28,7 @@ class ProductSeeder extends Seeder
         Product::create([
             'category_id' => Category::where('slug','top')->first()->id,
             'name' => 'Lace Trim Tank Top',
-            'description' => 'Pink striped tank top.',
+            'description' => '',
             'price' => 79000,
             'discount_price' => 85000,
             'size' => 'S',

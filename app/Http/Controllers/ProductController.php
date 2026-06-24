@@ -26,4 +26,21 @@ class ProductController extends Controller
             )
         );
     }
+
+    public function newArrivals()
+    {
+        $newArrivals = Product::where('is_featured', false)
+            ->paginate(12);
+
+        return view('new-arrivals', compact('newArrivals'));
+    }
+
+    public function topSelling()
+    {
+        $topSelling = Product::where('is_featured', true)
+            ->paginate(12);
+
+        return view('top-selling', compact('topSelling'));
+    }
+
 }

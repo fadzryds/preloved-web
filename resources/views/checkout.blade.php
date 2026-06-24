@@ -2,205 +2,252 @@
 
 @section('content')
 
-@php
-
-    $cart = session('cart', []);
-
-    $subtotal = collect($cart)->sum(function($item){
-        return $item['price'] * $item['qty'];
-    });
-
-    $shipping = 15000;
-
-    $total = $subtotal + $shipping;
-
-@endphp
-
 <div class="container">
-
-    <!-- BREADCRUMB -->
-    <div class="breadcrumb">
-        <a href="{{ route('home') }}">Landing Page</a>
-        <span>></span>
-        <a href="{{ route('cart') }}">Cart</a>
-        <span>></span>
-        <span>Checkout</span>
-    </div>
 
     <h1 class="checkout-title">
         CHECKOUT
     </h1>
 
-    <div class="checkout-wrapper">
+    <form action="{{ route('payment') }}" method="POST">
 
-        <!-- LEFT SIDE -->
-        <div class="checkout-form">
+        @csrf
 
-            <!-- SHIPPING -->
-            <div class="checkout-card">
+        <div class="checkout-wrapper">
 
-                <h2 class="checkout-heading">
-                    📦 Shipping Address
-                </h2>
+            <div class="checkout-form">
 
-                <div class="form-group">
-                    <label>Full Name</label>
-                    <input
-                        type="text"
-                        placeholder="e.g Sarah Parker">
-                </div>
+                <div class="checkout-card">
 
-                <div class="form-group">
-                    <label>Phone Number</label>
-                    <input
-                        type="text"
-                        placeholder="+62 xxx xxxx xxxx">
-                </div>
-
-                <div class="form-group">
-                    <label>Complete Address</label>
-                    <textarea
-                        rows="4"
-                        placeholder="Street name, house number, apartment, etc."></textarea>
-                </div>
-
-                <div class="form-row">
+                    <h2>📦 Shipping Address</h2>
 
                     <div class="form-group">
-                        <label>City</label>
+                        <label>Full Name</label>
                         <input
                             type="text"
-                            placeholder="Jakarta">
+                            name="name"
+                            required>
                     </div>
 
                     <div class="form-group">
-                        <label>Postal Code</label>
+                        <label>Phone Number</label>
                         <input
                             type="text"
-                            placeholder="12345">
+                            name="phone"
+                            required>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Address</label>
+                        <textarea
+                            name="address"
+                            rows="4"
+                            required></textarea>
+                    </div>
+
+                    <div class="form-row">
+
+                        <div class="form-group">
+                            <label>City</label>
+                            <input
+                                type="text"
+                                name="city"
+                                required>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Postal Code</label>
+                            <input
+                                type="text"
+                                name="postal_code"
+                                required>
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <div class="checkout-card">
+
+                    <h2>💳 Payment Method</h2>
+
+                    <div class="payment-methods">
+
+                        <label class="payment-box">
+                            <input
+                                type="radio"
+                                name="payment_method"
+                                value="qris"
+                                onchange="showPaymentInfo()"
+                                required>
+
+                            QRIS
+                        </label>
+
+                        <label class="payment-box">
+                            <input
+                                type="radio"
+                                name="payment_method"
+                                value="bank_transfer"
+                                onchange="showPaymentInfo()">
+
+                            Transfer Bank
+                        </label>
+
+                        <label class="payment-box">
+                            <input
+                                type="radio"
+                                name="payment_method"
+                                value="cod"
+                                onchange="showPaymentInfo()">
+
+                            Cash On Delivery
+                        </label>
+
+                    </div>
+
+                    <div
+                        id="payment-info"
+                        style="margin-top:20px;">
                     </div>
 
                 </div>
 
             </div>
 
-            <!-- PAYMENT -->
-            <div class="checkout-card">
+            <div class="summary-card">
 
-                <h2 class="checkout-heading">
-                    💳 Payment Method
-                </h2>
+                <h2>Order Summary</h2>
 
-                <div class="payment-methods">
+                @foreach($cart as $item)
 
-                    <label class="payment-box active">
-                        <input
-                            type="radio"
-                            name="payment"
-                            checked>
+                    <div class="checkout-product">
+
+                        <img
+                            src="{{ asset('storage/' . $item['image']) }}"
+                            width="80">
 
                         <div>
-                            🏦
-                            <span>Bank Transfer</span>
+
+                            <h4>{{ $item['name'] }}</h4>
+
+                            <p>Qty : {{ $item['qty'] }}</p>
+
+                            <p>
+                                Rp{{ number_format($item['price'],0,',','.') }}
+                            </p>
+
                         </div>
-                    </label>
 
-                    <label class="payment-box">
-                        <input
-                            type="radio"
-                            name="payment">
+                    </div>
 
-                        <div>
-                            📱
-                            <span>E-Wallet</span>
-                        </div>
-                    </label>
+                @endforeach
 
-                    <label class="payment-box">
-                        <input
-                            type="radio"
-                            name="payment">
+                <hr>
 
-                        <div>
-                            💵
-                            <span>Cash on Delivery</span>
-                        </div>
-                    </label>
-
-                </div>
-
-            </div>
-
-        </div>
-
-        <!-- RIGHT SIDE -->
-        <div class="summary-card">
-
-            <h2>Order Summary</h2>
-        
-            @foreach($cart as $item)
-        
-            <div class="checkout-product">
-        
-                <img
-                    src="{{ asset('images/'.$item['image']) }}"
-                    alt="{{ $item['name'] }}">
-        
-                <div>
-        
-                    <h4>{{ $item['name'] }}</h4>
-        
-                    <p>
-                        Size : {{ $item['size'] }}
-                    </p>
-        
-                    <p>
-                        Qty : {{ $item['qty'] }}
-                    </p>
-        
+                <div class="summary-row">
+                    <span>Subtotal</span>
                     <span>
-                        Rp{{ number_format($item['price'],0,',','.') }}
+                        Rp{{ number_format($subtotal,0,',','.') }}
                     </span>
-        
                 </div>
-        
+
+                <div class="summary-row">
+                    <span>Shipping</span>
+                    <span>
+                        Rp{{ number_format($shipping,0,',','.') }}
+                    </span>
+                </div>
+
+                <div class="summary-row total-payment">
+                    <strong>Total</strong>
+                    <strong>
+                        Rp{{ number_format($total,0,',','.') }}
+                    </strong>
+                </div>
+
+                <button
+                    type="submit"
+                    class="place-order-btn">
+
+                    Place Order
+
+                </button>
+
             </div>
-        
-            @endforeach
-        
-            <hr>
-        
-            <div class="summary-row">
-                <span>Subtotal</span>
-                <span>
-                    Rp{{ number_format($subtotal,0,',','.') }}
-                </span>
-            </div>
-        
-            <div class="summary-row">
-                <span>Shipping</span>
-                <span>
-                    Rp{{ number_format($shipping,0,',','.') }}
-                </span>
-            </div>
-        
-            <hr>
-        
-            <div class="summary-row total-payment">
-                <span>Total Payment</span>
-                <span>
-                    Rp{{ number_format($total,0,',','.') }}
-                </span>
-            </div>
-        
-            <button class="place-order-btn">
-                Place Order
-            </button>
-        
+
         </div>
 
-    </div>
+    </form>
 
 </div>
+
+<script>
+
+function showPaymentInfo()
+{
+    const method =
+        document.querySelector(
+            'input[name="payment_method"]:checked'
+        ).value;
+
+    const total =
+        "Rp{{ number_format($total,0,',','.') }}";
+
+    let html = '';
+
+    if(method === 'qris')
+    {
+        html = `
+            <div class="payment-preview">
+
+                <h3>QRIS Payment</h3>
+
+                <p>
+                    QRIS akan ditampilkan
+                    setelah order dibuat.
+                </p>
+
+            </div>
+        `;
+    }
+
+    if(method === 'bank_transfer')
+    {
+        html = `
+            <div class="payment-preview">
+
+                <h3>Transfer Bank</h3>
+
+                <p>
+                    Virtual Account akan dibuat
+                    otomatis setelah checkout.
+                </p>
+
+            </div>
+        `;
+    }
+
+    if(method === 'cod')
+    {
+        html = `
+            <div class="payment-preview">
+
+                <h3>Cash On Delivery</h3>
+
+                <p>
+                    Siapkan uang tunai sebesar
+                    <strong>${total}</strong>
+                </p>
+
+            </div>
+        `;
+    }
+
+    document
+        .getElementById('payment-info')
+        .innerHTML = html;
+}
+
+</script>
 
 @endsection

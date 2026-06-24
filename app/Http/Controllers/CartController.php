@@ -4,6 +4,11 @@ namespace App\Http\Controllers;
 
 use App\Models\Product;
 use Illuminate\Http\Request;
+use App\Models\Order;
+use App\Models\OrderItem;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Auth;
 
 class CartController extends Controller
 {
@@ -157,5 +162,104 @@ class CartController extends Controller
             'shipping',
             'total'
         ));
+    }
+
+    public function payment(Request $request)
+    {
+        $cart = session('cart', []);
+    
+        if (empty($cart)) {
+            return redirect()->route('cart')
+                ->with('error', 'Cart is empty');
+        }
+    
+        $subtotal = collect($cart)->sum(function ($item) {
+            return $item['price'] * $item['qty'];
+        });
+    
+        $shipping = 15000;
+    
+        $total = $subtotal + $shipping;
+    
+        DB::beginTransaction();
+    
+        try {
+        
+            $status = 'pending';
+        
+            if ($request->payment_method === 'cod') {
+                $status = 'shipped';
+            }
+        
+            $order = Order::create([
+            
+                'user_id' => Auth::id(),
+            
+                'order_number' =>
+                    'ORD-' . strtoupper(Str::random(8)),
+            
+                'full_name' => $request->name,
+            
+                'phone' => $request->phone,
+            
+                'address' => $request->address,
+            
+                'city' => $request->city,
+            
+                'postal_code' => $request->postal_code,
+            
+                'payment_method' => $request->payment_method,
+            
+                'subtotal' => $subtotal,
+            
+                'shipping_fee' => $shipping,
+            
+                'discount' => 0,
+            
+                'total' => $total,
+            
+                'status' => $status,
+            ]);
+        
+            foreach ($cart as $item) {
+            
+                OrderItem::create([
+                
+                    'order_id' => $order->id,
+                
+                    'product_id' => $item['id'],
+                
+                    'price' => $item['price'],
+                
+                    'quantity' => $item['qty'],
+                ]);
+            
+                Product::where('id', $item['id'])
+                    ->decrement('stock', $item['qty']);
+            }
+        
+            DB::commit();
+        
+            session()->forget('cart');
+        
+            return view('payment', [
+            
+                'order' => $order,
+            
+                'method' => $request->payment_method,
+            
+                'total' => $total,
+            
+            ]);
+        
+        } catch (\Exception $e) {
+        
+            DB::rollBack();
+        
+            return back()->with(
+                'error',
+                $e->getMessage()
+            );
+        }
     }
 }

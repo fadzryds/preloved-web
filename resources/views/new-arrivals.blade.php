@@ -2,6 +2,10 @@
 
 @section('content')
 
+@php
+use Illuminate\Support\Facades\Storage;
+@endphp
+
 <div class="container">
 
     <h1 class="page-title">
@@ -10,34 +14,46 @@
 
     <div class="product-grid">
 
-        @foreach($newArrivals ?? [] as $product)
+        @forelse($newArrivals as $product)
 
-            <div class="product-card">
+            <a href="{{ route('product.show', $product->id) }}"
+               class="product-link">
 
-                <div class="product-image">
+                <div class="product-card">
 
-                    <img
-                        src="{{ asset('images/' . $product->image) }}">
+                    <div class="product-image">
 
-                </div>
+                        <img
+                            src="{{ Storage::url($product->image) }}"
+                            alt="{{ $product->name }}">
 
-                <div class="product-info">
+                    </div>
 
-                    <h3>{{ $product->name }}</h3>
+                    <div class="product-info">
 
-                    <div class="price">
+                        <h3>{{ $product->name }}</h3>
 
-                        Rp{{ number_format($product->price,0,',','.') }}
+                        <div class="price">
+
+                            Rp{{ number_format($product->price,0,',','.') }}
+
+                        </div>
 
                     </div>
 
                 </div>
 
-            </div>
+            </a>
 
-        @endforeach
+        @empty
+
+            <p>Tidak ada produk.</p>
+
+        @endforelse
 
     </div>
+
+    {{ $newArrivals->links() }}
 
 </div>
 

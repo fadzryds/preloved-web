@@ -58,7 +58,6 @@
 
 <!-- CATEGORY -->
 <section class="category-section">
-
     <div class="container">
 
         <h2 class="category-title">
@@ -71,27 +70,28 @@
 
         <div class="category-grid">
 
-            <div class="category-grid">
-
-                @foreach($categories as $category)
+            @forelse($categories as $category)
 
                 <div class="category-item">
-                
+
                     <img
-                        src="{{ asset('storage/' . $category->image) }}"
-                        alt="{{ $category->name }}">
-                
+                        src="{{ Storage::url($category->image) }}"
+                        alt="{{ $category->name }}"
+                        onerror="this.src='{{ asset('images/no-image.png') }}'">
+
                     <span>{{ $category->name }}</span>
-                
+
                 </div>
 
-                @endforeach
-            
-            </div>
+            @empty
+
+                <p>Tidak ada kategori.</p>
+
+            @endforelse
+
         </div>
 
     </div>
-
 </section>
 
 <!-- PRODUCTS -->
@@ -105,65 +105,57 @@
 
         <div class="product-grid">
 
-            @foreach($newArrivals as $product)
-            <a href="{{ route('product.show', $product->id) }}"
-                class="product-link">
+            @forelse($newArrivals as $product)
 
-                <div class="product-card">
-        
-                    <div class="product-image">
-                        <img
-                            src="{{ asset('storage/' . $product->image) }}"
-                            alt="{{ $product->name }}">
+                <a href="{{ route('product.show', $product->id) }}"
+                    class="product-link">
+
+                    <div class="product-card">
+
+                        <div class="product-image">
+
+                            <img
+                                src="{{ Storage::url($product->image) }}"
+                                alt="{{ $product->name }}"
+                                onerror="this.src='{{ asset('images/no-image.png') }}'">
+
+                        </div>
+
+                        <div class="product-info">
+
+                            <h3>{{ $product->name }}</h3>
+
+                            <div class="rating">
+                                ★★★★★
+                            </div>
+
+                            <div class="price">
+
+                                <span class="current-price">
+                                    Rp{{ number_format($product->price,0,',','.') }}
+                                </span>
+
+                                @if($product->discount_price)
+
+                                    <span class="old-price">
+                                        Rp{{ number_format($product->discount_price,0,',','.') }}
+                                    </span>
+
+                                @endif
+
+                            </div>
+
+                        </div>
 
                     </div>
-        
-                    <div class="product-info">
-        
-                        <h3>
-                            {{ $product->name }}
-                        </h3>
-        
-                        <div class="rating">
-                            ★★★★★ <span>4.5/5</span>
-                        </div>
-        
-                        <div class="price">
-        
-                            <span class="current-price">
-                                Rp{{ number_format($product->price,0,',','.') }}
-                            </span>
-        
-                            @if($product->discount_price)
-        
-                                <span class="old-price">
-                                    Rp{{ number_format($product->discount_price,0,',','.') }}
-                                </span>
-        
-                                @php
-                                    $discount =
-                                    round(
-                                    (($product->discount_price - $product->price)
-                                    / $product->discount_price) * 100
-                                    );
-                                @endphp
-        
-                                <span class="discount">
-                                    -{{ $discount }}%
-                                </span>
-        
-                            @endif
-        
-                        </div>
-        
-                    </div>
-        
-                </div>
-            </a>
-        
-            @endforeach
-        
-        </div>
+
+                </a>
+
+            @empty
+
+                <p>Tidak ada produk.</p>
+
+            @endforelse
 
         </div>
 
@@ -181,63 +173,57 @@
 
         <div class="product-grid">
 
-            @foreach($topSelling as $product)
-            
-            <a href="{{ route('product.show', $product->id) }}"
-                class="product-link">
+            @forelse($topSelling as $product)
 
-                <div class="product-image">
-                    <img
-                        src="{{ asset('storage/' . $product->image) }}"
-                        alt="{{ $product->name }}">
-                
-                </div>        
-                
-                    <div class="product-info">
-        
-                        <h3>
-                            {{ $product->name }}
-                        </h3>
-        
-                        <div class="rating">
-                            ★★★★★ <span>4.8/5</span>
+                <a href="{{ route('product.show', $product->id) }}"
+                    class="product-link">
+
+                    <div class="product-card">
+
+                        <div class="product-image">
+
+                            <img
+                                src="{{ Storage::url($product->image) }}"
+                                alt="{{ $product->name }}"
+                                onerror="this.src='{{ asset('images/no-image.png') }}'">
+
                         </div>
-        
-                        <div class="price">
-        
-                            <span class="current-price">
-                                Rp{{ number_format($product->price,0,',','.') }}
-                            </span>
-        
-                            @if($product->discount_price)
-        
-                                <span class="old-price">
-                                    Rp{{ number_format($product->discount_price,0,',','.') }}
+
+                        <div class="product-info">
+
+                            <h3>{{ $product->name }}</h3>
+
+                            <div class="rating">
+                                ★★★★★
+                            </div>
+
+                            <div class="price">
+
+                                <span class="current-price">
+                                    Rp{{ number_format($product->price,0,',','.') }}
                                 </span>
-        
-                                @php
-                                    $discount =
-                                    round(
-                                    (($product->discount_price - $product->price)
-                                    / $product->discount_price) * 100
-                                    );
-                                @endphp
-        
-                                <span class="discount">
-                                    -{{ $discount }}%
-                                </span>
-        
-                            @endif
-        
+
+                                @if($product->discount_price)
+
+                                    <span class="old-price">
+                                        Rp{{ number_format($product->discount_price,0,',','.') }}
+                                    </span>
+
+                                @endif
+
+                            </div>
+
                         </div>
-        
+
                     </div>
-        
-                </div>
-            </a>
-            @endforeach
-        
-        </div>
+
+                </a>
+
+            @empty
+
+                <p>Tidak ada produk unggulan.</p>
+
+            @endforelse
 
         </div>
 
