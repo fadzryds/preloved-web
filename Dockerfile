@@ -6,16 +6,14 @@ FROM node:22 AS frontend
 WORKDIR /app
 
 COPY package*.json ./
-
 RUN npm ci
 
 COPY . .
-
 RUN npm run build
 
 
 # =========================
-# PHP / Laravel Stage
+# Laravel Stage
 # =========================
 FROM dunglas/frankenphp:php8.3-bookworm
 
@@ -38,7 +36,6 @@ WORKDIR /app
 
 COPY . .
 
-# Copy hasil build Vite
 COPY --from=frontend /app/public/build ./public/build
 
 RUN composer install \
@@ -47,12 +44,16 @@ RUN composer install \
     --optimize-autoloader \
     --no-interaction
 
-RUN mkdir -p storage/framework/{cache,sessions,views} \
+RUN mkdir -p storage/framework/cache \
+    storage/framework/sessions \
+    storage/framework/views \
     storage/logs \
     bootstrap/cache
 
 RUN chmod -R 775 storage bootstrap/cache
 
-EXPOSE 8000
+ENV APP_ENV=production
 
-CMD ["sh", "-c", "php artisan serve --host=0.0.0.0 --port=${PORT:-8000}"]
+EXPOSE 80
+
+CMD ["frankenphp", "run", "--config", "/etc/caddy/Caddyfile"]
